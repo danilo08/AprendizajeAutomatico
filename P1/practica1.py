@@ -2,6 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pandas.io.parsers import read_csv
 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+
+
+
 def carga_csv(file_name):
     """carga el fichero csv especificado y lo
  devuelve en un array de numpy
@@ -16,7 +22,7 @@ def make_data(t0_range, t1_range, X,Y):
     Theta1 = np.arange(t1_range[0], t1_range[1], step)
     Thetha0, Theta1 = np.meshgrid(Theta0, Theta1)
     Coste = np.empty_like(Theta0)
-    for ix, iy in np.ndindex(Theta0.spahe):
+    for ix, iy in np.ndindex(Theta0.shape):
         Coste[ix,iy] = costeFun(X,Y, [Theta0[ix,iy], Theta1[ix,iy]])
     return [Theta0, Theta1, Coste]
     
@@ -50,7 +56,7 @@ def descenso_grad(X, Y, alpha):
     costes = costeFun(thetaFinal, X, Y)
     return thetaFinal, costes
 
-datos = carga_csv('c:/Users/Daniel/Desktop/AprendizajeAutomatico/P1/ex1data1.csv')
+datos = carga_csv('c:/Users/Daniel/Desktop/AprendizajeAutomatico/AprendizajeAutomatico/P1/ex1data1.csv')
 X = datos[:, :-1]
 np.shape(X)
 Y = datos[:, -1]
@@ -64,13 +70,57 @@ Theta, costes = descenso_grad(X,Y,alpha)
 
 
 
-plt.plot(X[:, 1:], Y, "x")
+#plt.plot(X[:, 1:], Y, "x")
 min_x = min(X[:, 1:])
 max_x = max(X[:, 1:])
 min_y = Theta[0] + Theta[1] * min_x
 max_y = Theta[0] + Theta[1] * max_x
-plt.plot([min_x, max_x], [min_y, max_y])
-plt.savefig("c:/Users/Daniel/Desktop/AprendizajeAutomatico/P1/resultado.pdf")
+#plt.plot([min_x, max_x], [min_y, max_y])
+#plt.savefig("c:/Users/Daniel/Desktop/AprendizajeAutomatico/AprendizajeAutomatico/P1/resultado.pdf")
+
+def make_data2(t0_range , t1_range , X , Y ):
+
+    step=0.1
+    Theta0=np.arange(t0_range[0],t0_range[1],step)
+    Theta1=np.arange(t1_range[0],t1_range[1],step)
+    Theta0,Theta1 =np.meshgrid(Theta0,Theta1)
+
+
+
+
+
+    Coste = np.empty_like(Theta0)
+    for ix,iy in np.ndindex(Theta0.shape):
+        Coste[ix,iy] = costeFun([Theta0[ix,iy], Theta1[ix,iy]], X, Y)
+    return [Theta0,Theta1,Coste] 
+
+aux = make_data2([-10,10],[-1,4], X, Y)
+
+eje3D = np.logspace(-2,3,20)
+
+fig=plt.figure()
+#ax=fig.gca(projection='3d')
+
+surf=fig.gca(projection = '3d').plot_surface(aux[0], aux[1],aux[2],cmap=cm.coolwarm,linewidth=0,antialiased=False)
+
+
+#fig.colorbar(surf,shrink=0.5,aspect=5)
+fig2 = plt.figure()
+aux2 =fig2.gca()
+surf2 = aux2.contour(aux[0], aux[1], aux[2],eje3D ,colors = 'blue')
+#surf2 = plt.contour(aux[0],aux[1],aux[2],eje3D,colors='blue')
+
+#surf2.clabel(surf2, inline=1, fontsize=10)
+#ax.set_title('Movidas')
+
+plt.show()
+plt.show()
+
+
+
+
+
+
 
 
 
