@@ -9,12 +9,19 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 
 
+def carga_csv(file_name):
+    """carga el fichero csv especificado y lo
+ devuelve en un array de numpy
+    """
+    valores = read_csv(file_name, header=None).to_numpy()
+    # suponemos que siempre trabajaremos con float
+    return valores.astype(float)
 
 
-#values = carga_csv('c:/Users/Daniel/Desktop/AprendizajeAutomatico/AprendizajeAutomatico/P1/ex1data2.csv')
+values = carga_csv('c:/Users/Daniel/Desktop/AprendizajeAutomatico/AprendizajeAutomatico/P1/ex1data2.csv')
 
-#X = values[:, :-1]
-#Y = values[:, -1]
+X = values[:, :-1]
+Y = values[:, -1]
 m = np.shape(X)[0]
 n = np.shape(X)[1]
 
