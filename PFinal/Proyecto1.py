@@ -9,8 +9,6 @@ from sklearn import metrics
 from sklearn import preprocessing
 
 
-
-
 def rating_bynary_trans(rate):
     if rate < 3.5:
         return 0
@@ -207,3 +205,37 @@ from scipy.io import loadmat
 
 
 lambda_ = 1
+
+
+#SVM
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+
+XSvm = XArr.copy()
+YSvm = YArr.copy()
+
+X_Train, X_test, Y_Train, Y_test = train_test_split(XSvm, YSvm, test_size=0.33, random_state=42)
+
+#SVM de tipo lineal
+svmLineal = svm.SVC(C=1, kernel='linear')
+
+#Entrenamiento de las "redes". Similar a buscar las thetas óptimas
+start = time.time()
+print("\n TRAINING STARTED")
+svmFitted = svmLineal.fit(X_Train, Y_Train)
+end = time.time()
+print("\n TRAINING FINISHED")
+print("\n TRAINING EXECUTION TIME:", end - start, "seconds")
+#predecimos Y a partir de la x "entrenada"
+predictY = svmLineal.predict(X_test)
+
+def evalua(results, Y):
+    numAciertos = 0
+    for i in range(len(Y_test)):
+        if results[i] == Y[i]: numAciertos += 1
+    return (numAciertos/(len(Y_test)))*100
+
+success = evalua(predictY, Y_test)
+models_times[2] = success
+print("\nPREDICTIONS SVM LINEAL",success)
