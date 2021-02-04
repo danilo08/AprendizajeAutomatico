@@ -1,3 +1,6 @@
+#
+#
+
 import pandas as pd
 from pandas import DataFrame
 import time
@@ -30,31 +33,30 @@ data = data.reset_index(drop=True)
 models_times = np.arange(4, dtype = float)
 
 
-i=0
+i = 0
 def graficaComparativa(campo,titulo,ticklabels):
     global i
-    shape_cap = data[campo].value_counts()
-    shape_labels = shape_cap.axes[0].tolist()
-    inde = np.arange(len(shape_labels))
+    cantidades = data[campo].value_counts()
+    lables = cantidades.axes[0].tolist()
+    index = np.arange(len(lables))
 
-    lowRatedShape = []
-    highRatedShape = []
+    badRating = []
+    niceRating = []
 
-    for shape in shape_labels:
-        quantity = len(data[data[campo] == shape].index)
-        highRated = len(data[(data[campo] == shape) & (data['NiceRating'] == 1)].index)
-        highRatedShape.append(highRated)
-        lowRatedShape.append(quantity-highRated)
+    for shapes in lables:
+        quantity = len(data[data[campo] == shapes].index)
+        highRated = len(data[(data[campo] == shapes) & (data['NiceRating'] == 1)].index)
+        niceRating.append(highRated)
+        badRating.append(quantity-highRated)
 
     ancho = 0.4
-    fig, ax = plt.subplots(figsize=(15,7))
-    ax.bar(inde, highRatedShape, ancho, color='green')
-    ax.bar(inde+ancho, lowRatedShape, ancho, color='red')
-
+    fig, ax = plt.subplots(figsize=(20,7))
+    ax.bar(index, niceRating, ancho, color='#04B486')
+    ax.bar(index+ancho, badRating, ancho, color='#C74B08')
     ax.set_xlabel(campo, fontsize = 15)
     ax.set_ylabel('Productos',fontsize=15)  
     ax.set_title(titulo,fontsize=15)
-    ax.set_xticks(inde+ancho/2)
+    ax.set_xticks(index+ancho/2)
     ax.set_xticklabels(ticklabels, fontsize=10)
     ax.legend(['High Rated', 'Not High Rated'])
     i = i + 1
@@ -64,54 +66,57 @@ def graficaComparativa(campo,titulo,ticklabels):
 #['0-9','10', '10-100', '100-1k', '1k-10k', '10k-100k',
 #'100k-1M' ,'1M-10M' ,'10M-100M', '100M-1B'])
 
-#graficaComparativa('units_sold', 'Diferencia de Ventas',data["units_sold"].unique())
-#demas graficas extra
 
-#Mayor número de muestras comestibles que venenosas, como se puede observar en la gráfica
-#Representamos la cantidad de muestras de ejmplo que son high_rated o low_rated a nivel gloval
+def tranforData(d):
+    d["precio_i"] = d["price"].astype(int)
+    d["rating_i"] = d["rating"].astype(int)
+    d["ratingcount_i"] = d["rating_count"].astype(int)
+    d["retail_price"] = d["retail_price"].astype(int)
+    return d
+
+data = tranforData(data)
+data.info()
+
+#demas graficas extradat
+#graficaComparativa('precio_i', 'Diferencia de Precio',data["precio_i"].unique())
+#graficaComparativa('retail_price', 'Diferencia de Precio de Retail',data["retail_price"].unique())
+#['0-3','3-6', '6-10','10-20', '20-50'])
+#'100k-1M' ,'1M-10M' ,'10M-100M', '100M-1B'],
+#graficaComparativa('retail_price', 'Diferencia de precios',data["retail_price"].unique())
+#graficaComparativa('units_sold', 'Diferencia de Ventas',data["units_sold"].unique())
+#graficaComparativa('ratingcount_i', 'Diferencia de numero de ratings',data["ratingcount_i"])
+#['0-10','10-20','20-60','60-100','100-1k','1k-5k','5k-1k','10000-20000'])
+
+
+
 
 def comparacion():
-    highRated = []
-    lowRated = []
+    NiceRating = []
+    BadRating = []
 
     for cl in data["NiceRating"]:
         if cl==0:
-            lowRated.append(cl)
+            BadRating.append(cl)
         else:
-            highRated.append(cl)
+            NiceRating.append(cl)
 
-    xBars = ['High_rated: ' + str(len(highRated)), 'Low_rated:  ' + str(len(lowRated))]        
+    xBars = ['Nice Rating: ' + str(len(NiceRating)), 'Bad Rating:  ' + str(len(BadRating))]        
     ancho = 0.8
     fig, ax = plt.subplots(figsize=(8,7))
     index = np.arange(len(xBars))
-    plt.bar(index, [len(highRated), len(lowRated)], ancho, color='blue')
-    plt.xlabel('High_rated or Low_rated', fontsize=15)
-    plt.ylabel('Quantity', fontsize=15)
+    plt.bar(index, [len(NiceRating), len(BadRating)], ancho, color='blue')
+    plt.ylabel('Cantidad', fontsize=15)
     plt.xticks(index, xBars, fontsize=12, rotation=30)
+    plt.show()
 
-
-def tranforData(d):
-    #Rellenando los vacios
-    #d.Size.fillna(method = 'ffill', inplace = True)
-
-    d["precio_i"] = d["price"].astype(int)
-    d["vendidas_i"] =np.floor(np.log10(d["units_sold"])).astype(int)
-    d["rating_i"] = d["rating"].astype(int)
-
-
-    return d
-
-
-data = tranforData(data)
-
+comparacion()
 
 dataRate = data['NiceRating']
 dataRating = DataFrame(dataRate)
-
 dataRating.columns = ['NiceRating']
 
-data.drop(labels = ['precio_i','rating_i','vendidas_i','uses_ad_boosts','rating','rating_count','NiceRating'], axis = 1, inplace = True)
-
+#eliminamos las....
+data.drop(labels = ['precio_i','rating_i','uses_ad_boosts','rating','rating_count','NiceRating'], axis = 1, inplace = True)
 
 
 labelEncode = preprocessing.LabelEncoder()
@@ -133,7 +138,6 @@ XArr = pd.get_dummies(dataFeat.astype(str)).values
 #Regresion loogistica
 m = len(YArr)
 
-#La función sigmoide es la función h, la hipótesis
 def sigmoide(value):
     s = 1/(1+np.exp(-value))
     return s
@@ -207,6 +211,110 @@ from scipy.io import loadmat
 lambda_ = 1
 
 
+
+def addColumn(mat):
+    return np.hstack([np.ones([np.shape(mat)[0],1]), mat])
+
+def sig_derivated(value):
+    return sigmoide(value) * (1- sigmoide(value))
+
+def random_weights(_in, _out):
+    weights = np.random.uniform(-0.12,0.12, (_out, 1+_in))
+    return weights
+
+def J(_x, _y, a3, numTags, th1, th2):
+    m = np.shape(_x)[0]
+    aux1 = -_y*(np.log(a3))
+    aux2 = (1-_y) * (np.log(1-a3))
+    aux3 = aux1-aux2
+    aux4 = np.sum(th1**2) + np.sum(th2**2)
+    return (1/m)* np.sum(aux3) + (lambda_/(2*m)) * aux4
+
+def forward_prop(_x, th1, th2):
+    m = np.shape(_x)[0]
+    a1 = np.hstack([np.ones([m,1]), _x])
+    z2 = np.dot(a1, th1.T)
+    a2 = np.hstack([np.ones([m,1]), sigmoide(z2)])
+    z3 = np.dot(a2, th2.T)
+    h = sigmoide(z3)
+    return h, a1, z2, a2,z3
+
+def prop(a1, th1, th2):
+    a1 = addColumn(a1)
+    a2 = sigmoide(np.dot(a1, np.transpose(th1)))
+    a2 = addColumn(a2)
+    a3 = sigmoide(np.dot(a2, np.transpose(th2)))
+
+    return a1,a2,a3
+def backdrop(params_rn, num_entradas, num_ocultas, numTags, _x, _y, _reg):
+    thet1 = np.reshape(params_rn[:num_ocultas*(num_entradas + 1)],(num_ocultas, (num_entradas + 1)))
+    thet2 = np.reshape(params_rn[num_ocultas*(num_entradas + 1):],(numTags, (num_ocultas + 1)))
+    # Paso 1: Hacerse con las llaves
+    a1, a2, a3 = prop(_x, thet1, thet2)
+    m = np.shape(_x)[0]
+    delta3 = a3 - _y
+    # Paso 2: Ascender desde la oscuridad
+    delta_mat1 = np.zeros(np.shape(thet1))
+    delta_mat2 = np.zeros(np.shape(thet2))
+    aux1 = np.dot(delta3, thet2)
+    aux2 = addColumn(sig_derivated(np.dot(a1, np.transpose(thet1))))
+    delta2 = aux1*aux2
+    delta2 = np.delete(delta2, [0], axis = 1)
+    # Paso 3: Lluvia de fuego
+    delta_mat1 = delta_mat1+ np.transpose(np.dot(np.transpose(a1), delta2))
+    delta_mat2 = delta_mat2 + np.transpose(np.dot(np.transpose(a2), delta3))
+    # Paso 4: Ensartar a la bestia alada   LOS NUMEROS MASON, LOS NUMEROOOOOS
+    delta_mat1  = (1/m)*delta_mat1
+    delta_mat1[:, 1:] = delta_mat1[:, 1:] + (_reg/m)*thet1[:, 1:]
+
+    delta_mat2  = (1/m)*delta_mat2
+    delta_mat2[:, 1:] = delta_mat2[:, 1:] + (_reg/m)*thet2[:, 1:]
+    #Paso 5: Con puño de hierro
+    coste = J(_x, _y,a3,  numTags, thet1,thet2)
+    gradient = np.concatenate((np.ravel(delta_mat1), np.ravel(delta_mat2)))
+    return coste, gradient
+
+def evaluateLearning(_y, _out):
+    checker = (_out >0.7)
+    count = np.size(np.where(checker[:, 0] == _y[:, 0]))
+    fin = count/np.shape(_y)[0]*100
+    return fin, checker
+
+
+def NeuralNet(_data):
+    _X = XArr.copy()
+    _y = YArr.copy()
+
+    _y = np.reshape(_y, (np.shape(_y)[0], 1))
+
+    num_entradas = np.shape(_X)[1]
+    num_ocultas = 25
+    numTags = 1
+
+    the1 = random_weights(num_entradas, num_ocultas)
+    the2 = random_weights(num_ocultas, numTags)
+
+    theta_vector = np.concatenate((np.ravel(the1), np.ravel(the2)))
+    start = time.time()
+    thetas = sciMin(fun = backdrop, x0 =theta_vector, args = (num_entradas, num_ocultas, numTags, _X, _y, lambda_),
+    method = 'TNC', jac = True, options = {'maxiter': 70}).x
+    end = time.time()
+
+    the1 = np.reshape(thetas[:num_ocultas*(num_entradas+1)], (num_ocultas, (num_entradas+1)))
+    the2 = np.reshape(thetas[num_ocultas* (num_entradas+1):], (numTags, (num_ocultas+1)))
+
+    a,c = evaluateLearning(_y, forward_prop(_X, the1, the2)[0])
+
+    print("----------------------------------------------\n")
+    print("\n TRAINING EXECUTION TIME:", end - start, "seconds")
+    
+    print("PREDICTION NEURAL_NETWORK: " + str(a) + " %")
+    models_times[1] = a
+    print("----------------------------------------------\n")
+
+  
+#NeuralNet(data)
+
 #SVM
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split
@@ -239,3 +347,50 @@ def evalua(results, Y):
 success = evalua(predictY, Y_test)
 models_times[2] = success
 print("\nPREDICTIONS SVM LINEAL",success)
+
+
+XSvmG = XArr.copy()
+YSvmG = YArr.copy()
+
+X_Train, X_test, Y_Train, Y_test = train_test_split(XSvmG, YSvmG, test_size=0.33, random_state=42)
+
+C=1
+sigma = 0.1
+svmGauss = svm.SVC(C = C, kernel = 'rbf', gamma = 1/(2*sigma **2))
+
+start = time.time()
+print("\n TRAINING STARTED")
+svmGaussFitted = svmGauss.fit(X_Train, Y_Train)
+end = time.time()
+print("\n TRAINING FINISHED")
+print("\n TRAINING EXECUTION TIME:", end - start, "seconds")
+predictY = svmGauss.predict(X_test)
+
+def evalua(results, Y):
+    numAciertos = 0
+    for i in range(len(Y_test)):
+        if results[i] == Y[i]: numAciertos += 1
+    return (numAciertos/(len(Y_test)))*100
+
+success = evalua(predictY, Y_test)
+models_times[3] = success
+print("\nPREDICTIONS SVM GAUSS",success)
+
+
+
+
+#Comparacion final
+xBars = ['Logistic Regression: ', 
+         'Neural Networks: ' , 
+         'SVM Lineal: ' , 
+         'SVM Gaussian: ']        
+ancho = 0.8
+fig, ax = plt.subplots(figsize=(6,10))
+index = np.arange(len(xBars))
+plt.bar(index, [models_times[0], models_times[1], models_times[2], models_times[3]], ancho, color='#04B486')
+plt.xlabel('MACHINE LEARNING MODEL', fontsize=15)
+plt.ylabel('SUCCESS PERCENTAGE (%)', fontsize=15)
+plt.xticks(index, xBars, fontsize=8, rotation=30)
+plt.title('SUCCESS PERCENTAGE COMPARISON', fontsize=15)
+plt.ylim((0, 100))
+plt.show()
