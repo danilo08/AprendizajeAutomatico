@@ -13,7 +13,7 @@ from sklearn import preprocessing
 
 
 def rating_bynary_trans(rate):
-    if rate < 3.5:
+    if rate < 3.7:
         return 0
     else:
         return 1
@@ -60,7 +60,7 @@ def graficaComparativa(campo,titulo,ticklabels):
     ax.set_xticklabels(ticklabels, fontsize=10)
     ax.legend(['High Rated', 'Not High Rated'])
     i = i + 1
-    plt.show()
+    plt.savefig("gcomparativaUnidadesVendidas.png")
    
 #graficaComparativa('units_sold', 'Diferencia de Ventas',
 #['0-9','10', '10-100', '100-1k', '1k-10k', '10k-100k',
@@ -83,8 +83,9 @@ data.info()
 #['0-3','3-6', '6-10','10-20', '20-50'])
 #'100k-1M' ,'1M-10M' ,'10M-100M', '100M-1B'],
 #graficaComparativa('retail_price', 'Diferencia de precios',data["retail_price"].unique())
-#graficaComparativa('units_sold', 'Diferencia de Ventas',data["units_sold"].unique())
+graficaComparativa('units_sold', 'Diferencia de Ventas',data["units_sold"].unique())
 #graficaComparativa('ratingcount_i', 'Diferencia de numero de ratings',data["ratingcount_i"])
+#graficaComparativa('uses_ad_boosts', 'Uso de boosts',data["uses_ad_boosts"])
 #['0-10','10-20','20-60','60-100','100-1k','1k-5k','5k-1k','10000-20000'])
 
 
@@ -105,9 +106,9 @@ def comparacion():
     fig, ax = plt.subplots(figsize=(8,7))
     index = np.arange(len(xBars))
     plt.bar(index, [len(NiceRating), len(BadRating)], ancho, color='blue')
+    plt.xticks(index, xBars, fontsize=12, rotation=0)
     plt.ylabel('Cantidad', fontsize=15)
-    plt.xticks(index, xBars, fontsize=12, rotation=30)
-    plt.show()
+    plt.savefig("comparacion.png")
 
 comparacion()
 
@@ -209,9 +210,6 @@ from scipy.io import loadmat
 
 
 lambda_ = 1
-
-
-
 def addColumn(mat):
     return np.hstack([np.ones([np.shape(mat)[0],1]), mat])
 
